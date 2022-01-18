@@ -1,3 +1,3 @@
-module github.com/tinmanjk/tpgl
+module github.com/tinmanjk/tgpl
 
 go 1.17

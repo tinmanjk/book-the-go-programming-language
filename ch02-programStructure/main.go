@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/tinmanjk/tpgl/ch01-tutorial/02-commandLineArguments/exportExample"
+	"github.com/tinmanjk/tgpl/ch01-tutorial/02-commandLineArguments/exportExample"
 )
 
 func main() {
