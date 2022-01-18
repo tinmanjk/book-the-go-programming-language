@@ -31,6 +31,11 @@ func main() {
 	pointers()
 	fmt.Println("------")
 
+	// 2.3.3
+	fmt.Println("2.3.3 The new Function")
+	newFunc()
+	fmt.Println("------")
+
 }
 
 // even if it is declared after main, it is initialized before main
@@ -99,4 +104,29 @@ func f() *int {
 func incr(p *int) int {
 	*p++ // increments what p points to; does not   change p
 	return *p
+}
+
+func newFunc() {
+	p := new(int)   // p, of type *int, points to **unnamed** int variable
+	fmt.Println(*p) // "0" -> memory at address IS zero-initialized
+	*p = 2          // sets the unnamed int to 2
+	fmt.Println(*p) // "2"
+
+	{
+		// new address
+		p := new(int)
+		q := new(int)
+		fmt.Println(p == q) // "false"
+	}
+}
+
+//lint:ignore U1000 ...
+func newInt() *int {
+	return new(int)
+}
+
+//lint:ignore U1000 ...
+func newIntWithoutNew() *int {
+	var dummy int
+	return &dummy
 }
