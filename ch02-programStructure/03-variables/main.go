@@ -22,7 +22,14 @@ func main() {
 	fmt.Println(packageLevelVariable)
 
 	// 2.3.1
+	fmt.Println("2.3.1 Short Variable Declarations")
 	shortVariableDeclaration()
+	fmt.Println("------")
+
+	// 2.3.2
+	fmt.Println("2.3.2 Pointers")
+	pointers()
+	fmt.Println("------")
 
 }
 
@@ -55,4 +62,41 @@ func shortVariableDeclaration() {
 
 	// k, m := i, j // no new variables error
 	fmt.Println(k, m)
+}
+
+func pointers() {
+	x := 1
+	p := &x         // address-of operator -> *int
+	fmt.Println(*p) // "1" // dereferencing operator *
+	*p = 2          // equivalent to x = 2 // "dereferencing assignment?"
+	fmt.Println(x)  // "2"
+
+	{
+		// pointers are comparable
+		var x, y int
+		var z *int = nil
+		fmt.Println(&x == &y, &x == z, z == nil) // "false false true"
+		z = &x
+		fmt.Println(&x == z) // true
+	}
+
+	fmt.Println(packagePointer) //pointer variable
+	//lint:ignore SA4000 <necessary reason after code>
+	fmt.Println(f() == f()) // "false" -> distinct value -> different pointers effectively
+
+	v := 1
+	incr(&v)              // side effect: v is now 2
+	fmt.Println(incr(&v)) // "3" (and v is 3)
+}
+
+var packagePointer = f()
+
+func f() *int {
+	v := 1
+	return &v // out of scope: escapes to the heap
+}
+
+func incr(p *int) int {
+	*p++ // increments what p points to; does not   change p
+	return *p
 }
