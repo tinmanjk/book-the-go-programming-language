@@ -49,13 +49,3 @@ func main() {
 	fmt.Println("------")
 
 }
-
-//lint:ignore U1000 ...
-func fib(n int) int {
-	x, y := 0, 1
-	for i := 0; i < n; i++ {
-		// easier to write, but maybe harder to read
-		x, y = y, x+y
-	}
-	return x
-}
