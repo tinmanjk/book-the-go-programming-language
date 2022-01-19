@@ -130,3 +130,20 @@ func newIntWithoutNew() *int {
 	var dummy int
 	return &dummy
 }
+
+//lint:ignore U1000 ...
+var global *int
+
+//lint:ignore U1000 ...
+func fAssignsToGlobal() {
+	//lint:ignore S1021 ...
+	var x int
+	x = 1
+	global = &x // x needs to escape to the heap where the global can still reference it
+}
+
+//lint:ignore U1000 ...
+func g() {
+	y := new(int)
+	*y = 1 // no need for y when g is finished -> it shouldn't be allocated on the heap
+}
