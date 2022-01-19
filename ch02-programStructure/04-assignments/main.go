@@ -7,8 +7,9 @@ import (
 
 func main() {
 	// 2.4.1. Tuple Assignment
-	fmt.Println(gcd(3, 4))
 
+	fmt.Println("2.4.1. Tuple Assignment")
+	fmt.Println(gcd(3, 4))
 	// discard operator if unwanted
 	_, err := os.Open("foo.txt") // function call returns two values
 	fmt.Println(err)
@@ -17,6 +18,26 @@ func main() {
 	// v, ok = m[key] // map lookup -> _,ok = m[key]
 	// v, ok = x.(T)  // type assertion
 	// v, ok = <-ch   // channel receive
+
+	fmt.Println("------")
+
+	// 2.4.2. Assignability
+	fmt.Println("2.4.2. Assignability")
+	// implicit assignments
+	// function call -> arguments are assigned to parameters
+	// return statement -> return operands assigned to result variables
+	// composite type -> literal expression
+	medals := []string{"gold", "silver", "bronze"}
+	// equal to medals[0] = "gold", etc.
+	fmt.Println(medals)
+
+	// simple rules: exact match of types, nil only to interface/pointer types
+	// constants: -> 3.6. more flexible rules
+	// more difficult rules to follow
+
+	// comparability with == and != is related to assignability
+	fmt.Println("------")
+
 }
 
 // Greatest Common Divisor
