@@ -22,7 +22,32 @@ func main() {
 	// 2. Package name -> tempconv (convention last segment of import path)
 
 	// goimports tool automatically adds imports -> perhaps integrated well with gopls and others into vscode
-
 	fmt.Println("----")
 
+	// 2.6.2
+	// init() -> cannot be referenced
+
+}
+
+// 2.6.2. Package Init
+//lint:ignore U1000 ...
+var a = b + c // a initialized third, to 3
+var b = f()   // b initialized second, to 2,by calling f
+var c = 1     // c initialized first, to 1
+
+func f() int { return c + 1 }
+
+// called after package level variables are initialized
+func init() {
+	fmt.Println("Initializing main")
+	fmt.Println(a)
+	fmt.Println(b)
+	fmt.Println(c)
+
+}
+
+// possible second init function
+func init() {
+	fmt.Println("Second Init Function")
+	fmt.Println("----")
 }
