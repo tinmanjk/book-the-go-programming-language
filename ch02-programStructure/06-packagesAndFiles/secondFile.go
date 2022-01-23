@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-// this is not called for some reason
+// this is called too
 func init() {
 	fmt.Println("Init secondfile")
 }
