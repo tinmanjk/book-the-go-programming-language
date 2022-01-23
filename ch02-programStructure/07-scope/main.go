@@ -63,7 +63,12 @@ var cwd string
 func init() {
 	// shadowing with short variable declaration
 	// use var err error instead
-	cwd, err := os.Getwd()
+	var err error
+	// short variable declaration only assigns if the variable
+	// is first declared in the **SAME** lexical block -> here the function
+	// cwd is package-level, so it is declared anew! and err is assigned to!!!
+	// -> subtle shadowing
+	cwd, err := os.Getwd() // assignment to err, cwd is stil declared!
 	if err != nil {
 		log.Fatalf("os.Getwd failed: %v", err)
 	}
