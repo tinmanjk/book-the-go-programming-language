@@ -86,6 +86,29 @@ func main() {
 	// either always minvalue though for some reason...not FFFF but 8000
 	fmt.Printf("%f -> %d -> %x\n", f, implInt, implInt)
 
+	// smaller into bigger signed -> movsx - preserving SIGN
+	for i := int8(0); i < 3; i++ {
+		bigNumber := int16(i) // movsx
+		fmt.Print(bigNumber)
+	}
+	fmt.Println()
+	fmt.Println("Bigger Into Smaller")
+	// bigger into smaller signed ->movZx -> SIGN WILL BE LOST
+	int16Var := int16(256)
+	fmt.Println(int16Var, int8(int16Var)) // 01 00 -> 00 [256 -> 0]
+	int16Var++
+	fmt.Println(int16Var, int8(int16Var)) // 01 01 -> 01 [257 -> 1]
+	// negative
+	int16Var = -256
+	fmt.Println(int16Var, int8(int16Var)) // FF 00 -> 00 [-256 -> 0]
+	int16Var++
+	fmt.Println(int16Var, int8(int16Var)) // FF 01 -> 01 [-255 -> 1]
+
+	for i := int16(0); i < 3; i++ {
+		bigNumber := int8(i) // movzx - lower bound of register
+		fmt.Print(bigNumber)
+	}
+
 	{
 		// Octal Hex Etc
 		fmt.Println("\nOctal vs Hex")
