@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"unicode/utf8"
+)
 
 func main() {
 
@@ -54,12 +57,12 @@ func main() {
 	fmt.Println("\n3.5.1 String Literals: ")
 	stringLiterals()
 
-	// 3.5.2 String Literals
-	fmt.Println("\n3.5.2 Unicode: ")
-	unicode()
-
+	// 3.5.3 Unicode-UTF8
+	fmt.Println("\n3.5.3 UTF-8: ")
+	utf8Examples()
 }
 
+// 3.5.1
 func stringLiterals() {
 	// escape sequences:
 
@@ -89,5 +92,135 @@ line`
 	fmt.Printf("%X\n", newLineExperiment[3]) // here the new line is simply 'A' line feed -> LF no CR
 }
 
-func unicode() {
+// 3.5.3
+func utf8Examples() {
+
+	// Variable encoding 1 to 4 bytes: xxxxxx are left for values
+
+	// 1 byte: 7 bits available
+	// 0xxxxxx runes 0–127 (ASCII)
+
+	// 2 bytes: 11 bits available -> 2048 possible values
+	// 110xxxxx 10xxxxxx -> [128–2047] -> (values <128 unused)
+
+	// 3 bytes: 16 bits available for 65535 possible values
+	// 1110xxxx 10xxxxx 10xxxxxx -> [2048–65535] -> (values <2048 unused)
+
+	// 4 bytes: 21 bits available
+	// 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx  65536–0x10ffff (other values unused)
+
+	sameString := [4]string{}
+	sameString[0] = "世界"                       // 2 3byte chars
+	sameString[1] = "\xe4\xb8\x96\xe7\x95\x8c" // 6 hex byte escapes
+	sameString[2] = "\u4e16\u754c"             // 2 16bit unicode escapes
+	sameString[3] = "\U00004e16\U0000754c"     // 2 32bit Unicode escapes
+	fmt.Println(sameString)
+
+	// e4b896 -> 24 bits -> 3 byte ENCODED
+	for i := 0; i < 3; i++ {
+		fmt.Printf("%08b ", sameString[1][i])
+		// 11100100 10111000 10010110
+		// e4 b8 96
+	}
+
+	fmt.Println()
+	// RUNE FORM -> No Encodings - Fixed size 4bytes
+	sameRune := [3]rune{'世', '\u4e16', '\U00004e16'}
+	fmt.Printf("%c - %d - %x\n", sameRune, sameRune, sameRune) // [世 世 世] - [19990 19990 19990] - [4e16 4e16 4e16]
+	fmt.Printf("%032b", sameRune[0])                           // 0000000000000000 0100 1110 0001 0110 -> 4 e 1 6
+	// 0100 1110 0001 0110 -> 16 bit 4e16 without encodings
+	// original encoded -> e4 b8 96
+	// [1110 -> 0100] e4 -> just the 4
+	// [10 -> 1110 00] b8 -> e (and 00 carry for next)
+	// [10 -> 01 0110] 96 -> 16 (with carry from previous)
+	fmt.Println()
+
+	runeOneHex := '\xFF' // valid hex escape -> ONLY for one byte though -> can be higher than ASCII!!!
+	fmt.Printf("%c -%c \n", runeOneHex, '\u00ff')
+	// more than one does not work
+	// runeOneHex = '\xFF\xFF'// won't compile
+
+	// iterating a string for code points -> it **decodes** the UTF-8 encodings
+	helloEastAsia := "Hello, 世界"
+
+	fmt.Println("Implicit UTF-8 Decoding for-range loop")
+	for i, r := range helloEastAsia {
+		fmt.Printf("%d\t%q\t%#x\n", i, r, r)
+	}
+
+	fmt.Println("No Decoding for loop") //
+	for i := 0; i < len(helloEastAsia); i++ {
+		if helloEastAsia[i] < 0x80 {
+			fmt.Printf("%d\t%q\t%#x\n", i, helloEastAsia[i], helloEastAsia[i])
+		} else {
+			fmt.Printf("%d\t'x'\t%#x\n", i, helloEastAsia[i])
+		}
+
+	}
+	fmt.Println()
+	fmt.Println(len(helloEastAsia))                    // 13
+	fmt.Println(utf8.RuneCountInString(helloEastAsia)) // 9
+
+	// explicit decoding -> same as for range loop
+	fmt.Println("\nExplicit Decoding for loop")
+	for i := 0; i < len(helloEastAsia); {
+		r, size := utf8.DecodeRuneInString(helloEastAsia[i:])
+		fmt.Printf("%d\t%c\n", i, r)
+		i += size
+	}
+
+	// invalid utf8- replacement character
+	// 110xxxxx 10xxxxxx -> [128–2047] -> (values <128 unused)
+	// 1100 0000 1000 0000-> 0 which should be invalid for 2 byte UTF-8
+	// c 0 8 0
+	fmt.Println("\nInvalid Decoding - replacement character �")
+	invalidDecoding := "\xc0\x80"
+	for i := 0; i < len(invalidDecoding); {
+		r, size := utf8.DecodeRuneInString(invalidDecoding[i:])
+		fmt.Printf("%d\t%c\n", i, r)
+		i += size
+	}
+	// � -> /uFFFD character replacement character
+	// �
+
+	fmt.Println("\nRunes more convenient - uniform size [4bytes] integers")
+
+	// Rune conversion
+
+	s := "プログラム"
+	// % x (with space) inserts space between a hex bytes
+	fmt.Printf("% x\n", s) // "e3 83 97 e3 83 ad e3 82 b0 e3 83 a9 e3 83 a0" -> encoded
+	r := []rune(s)         // **conversion decodes**
+	fmt.Printf("%x\n", r)  // "[30d7 30ed 30b0 30e9 30e0]" -> decoded Unicode code points
+
+	fmt.Println(string(r)) // "プログラム" -> string(r) -> **conversion encodes**
+
+	// converting from int to string
+	//-> int is understood or int or non-decoded code point to be decoded
+	// **1.15 warning in go vet** -> flag to disable "stringintconv"
+	fmt.Println(string(65)) // "A", not "65"
+	// new correct way
+	fmt.Println(string(rune(65)))
+	fmt.Println(string(0x4eac))  // "京"
+	fmt.Println(string(1234567)) // "�" -> invalid rune
+}
+
+// No need to Decode to get to the code point number representation for these operations
+func HasPrefix(s, prefix string) bool {
+	return len(s) >= len(prefix) &&
+		s[:len(prefix)] == prefix // byte comparison
+}
+
+func HasSuffix(s, suffix string) bool {
+	return len(s) >= len(suffix) &&
+		s[len(s)-len(suffix):] == suffix // byte comparison
+}
+
+func Contains(s, substr string) bool {
+	for i := 0; i < len(s); i++ {
+		if HasPrefix(s[i:], substr) {
+			return true
+		}
+	}
+	return false
 }
