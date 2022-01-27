@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 )
@@ -66,6 +67,10 @@ func main() {
 	// 3.5.4 Strings and Byte Slices
 	fmt.Println("\n3.5.4 Strings and Byte Slices")
 	stringsByteSlices()
+
+	// 3.5.5 Conversions between Strings and Numbers
+	fmt.Println("\n3.5.5 Conversions between Strings and Numbers")
+	stringsNumbersConversions()
 }
 
 // 3.5.1
@@ -312,4 +317,28 @@ func intsToString(values []int) string {
 	}
 	buf.WriteByte(']')
 	return buf.String()
+}
+
+// 3.5.5 Conversions between Strings and Numbers
+func stringsNumbersConversions() {
+	// integer to string
+	x := 123
+	y := fmt.Sprintf("%d", x)
+	fmt.Println(y, strconv.Itoa(x)) // "123 123"
+
+	// no padding available out of the box
+	fmt.Println(strconv.FormatInt(int64(x), 2)) //	"1111011"
+	// more convenient the verbs %b, %d, %o, %x
+	s := fmt.Sprintf("x=%08b", x) // "x=01111011" -> padding with adverbs 08
+	fmt.Println(s)
+
+	{
+		//lint:ignore SA4006 ...
+		x, err := strconv.Atoi("123") // x is an int
+		//lint:ignore SA4006 ...
+		y, err := strconv.ParseUint("FF", 16, 8) // no error y is 255
+		z, err := strconv.ParseInt("FF", 16, 8)  // error FF is too much for signed 8bit
+		// value out of range err for FF -> y is still maxed out at 127
+		fmt.Println(x, y, z, err) //
+	}
 }
