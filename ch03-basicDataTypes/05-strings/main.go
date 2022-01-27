@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -60,6 +62,10 @@ func main() {
 	// 3.5.3 Unicode-UTF8
 	fmt.Println("\n3.5.3 UTF-8: ")
 	utf8Examples()
+
+	// 3.5.4 Strings and Byte Slices
+	fmt.Println("\n3.5.4 Strings and Byte Slices")
+	stringsByteSlices()
 }
 
 // 3.5.1
@@ -223,4 +229,87 @@ func Contains(s, substr string) bool {
 		}
 	}
 	return false
+}
+
+// 3.5.4 Strings and Byte Slices
+func stringsByteSlices() {
+	fmt.Println(basename("a/b/c.go")) // "c"
+	fmt.Println(basename("c.d.go"))   // "c.d"
+	fmt.Println(basename("abc"))      // "abc"
+
+	fmt.Println(basenameWithLastIndex("a/b/c.go")) // "c"
+	fmt.Println(basenameWithLastIndex("c.d.go"))   // "c.d"
+	fmt.Println(basenameWithLastIndex("abc"))      // "abc"
+
+	fmt.Println(comma("12000000"))
+
+	fmt.Println("\nImmutability of string in convertion to/from byte slice")
+	s := "abc"
+	b := []byte(s) // copies values of string as not to overwrite them
+	b[0] = 'd'
+	s2 := string(b) // also copies to ensure immutability
+	fmt.Println(s)  // abc
+	fmt.Println(s2) // dbc
+
+	// bytes.Buffer type that serves as a string builder
+	fmt.Println(intsToString([]int{1, 2, 3})) // "[1, 2, 3]"
+
+}
+
+// basename removes directory components and a .suffix.
+// e.g., a => a, a.go => a, a/b/c.go => c,a/b.c.go => b.c
+func basename(s string) string {
+	// Discard last '/' and everything before.
+	for i := len(s) - 1; i >= 0; i-- {
+		if s[i] == '/' {
+			s = s[i+1:]
+			break
+		}
+	}
+	// Preserve everything before last '.'.
+	for i := len(s) - 1; i >= 0; i-- {
+		if s[i] == '.' {
+			s = s[:i]
+			break
+		}
+	}
+	return s
+}
+
+func basenameWithLastIndex(s string) string {
+
+	directoryLastIndex := strings.LastIndex(s, "/")
+
+	// no need for if due to -1+1=0 beginning of string
+	// ... smart code
+	s = s[directoryLastIndex+1:]
+
+	if dotIndex := strings.LastIndex(s, "."); dotIndex != -1 {
+		s = s[:dotIndex]
+	}
+	return s
+}
+
+// comma inserts commas in a non-negative decimal integer string.
+func comma(s string) string {
+	n := len(s)
+	if n <= 3 {
+		return s
+	}
+	return comma(s[:n-3]) + "," + s[n-3:]
+}
+
+// intsToString is like fmt.Sprint(values) but adds commas.
+func intsToString(values []int) string {
+	var buf bytes.Buffer
+	buf.WriteByte('[')
+	for i, v := range values {
+		if i > 0 {
+			buf.WriteString(", ")
+		}
+		// writes to writer -> which is the Buffer
+		fmt.Fprintf(&buf, "%d", v)
+	}
+	buf.WriteByte(']')
+	return buf.String()
 }
