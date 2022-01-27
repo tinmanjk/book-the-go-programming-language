@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -41,6 +42,9 @@ func main() {
 	fmt.Println("\n3.6.1 The Constant Generator iota")
 	iotaExamples()
 
+	// 3.6.2 Untyped Constants
+	fmt.Println("\n3.6.2 Untyped Constants")
+	untypedConstants()
 }
 
 const IPv4Len = 4
@@ -104,3 +108,87 @@ const (
 	ZiB // 1180591620717411303424 (exceeds 1   << 64)
 	YiB // 1208925819614629174706176
 )
+
+func untypedConstants() {
+	// too big to store in 64bit int -> however expression is possible
+	fmt.Println(YiB / ZiB) // "1024"
+
+	// one constant can be assigned to many types
+	// no need for type conversions
+	var x float32 = math.Pi
+	var y float64 = math.Pi
+	var z complex128 = math.Pi
+	fmt.Println(x, y, z)
+
+	// constant expressions (unnamed)
+	var f float64 = 212
+	fmt.Println((f - 32) * 5 / 9) // "100"; (f -32) * 5 is a float64
+	//lint:ignore SA4025 ...
+	fmt.Println(5 / 9 * (f - 32))     // "0"; 5/9 is an untyped integer, 0
+	fmt.Println(5.0 / 9.0 * (f - 32)) // "100";5.0/9.0 is an untyped float
+
+	// conversion from constants/constant expressions to type
+	{
+		const untypedComplex = 3 + 0i
+		const untypedInt = 3
+		const untypedFloat = 1e123
+		const untypedRUne = 'a'
+
+		// implicit conversion from untyped constants to a variable
+		var f float64 = untypedComplex // untyped complex ->float64
+		fmt.Println(f, untypedComplex)
+		f = untypedInt // untyped integer ->float64
+		fmt.Println(f, untypedInt)
+		f = untypedFloat // untyped floating-point -> float64
+		fmt.Println(f, untypedFloat)
+		f = untypedRUne // untyped rune -> float64
+		fmt.Println(f, untypedRUne)
+
+		// above equivalent to this explicit conversion
+		f = float64(3 + 0i)
+		f = float64(2)
+		f = float64(1e123)
+		f = float64('a')
+
+		// Compile time Conversion Errors
+		const deadbeef = 0xdeadbeef // untyped int with value 3735928559
+		fmt.Println(deadbeef)
+		const a = uint32(deadbeef) // uint32 with value 3735928559
+		fmt.Println(a)
+		const b = float32(deadbeef) // float32 with value 3735928576 (rounded up)
+		fmt.Printf("%f\n", b)
+		const c = float64(deadbeef) // float64 with value 3735928559 (exact)
+		fmt.Printf("%f\n", c)
+		// const d = int32(deadbeef)   // compile error: constant overflows int32
+		// const e = float64(1e309) // compile error: constant overflows float64
+		// const f = uint(-1)       // compile error: 	constant underflows uint
+
+	}
+
+	// flavor of untyped constant determines type with implicit conversions
+	{
+		i := 0      // untyped integer; 		implicit int(0)
+		r := '\000' // untyped rune; 	 	   	implicit rune('\000')
+		f := 0.0    // untyped floating-point; 	implicit float64(0.0)
+		c := 0i     // untyped complex; 		implicit complex128(0i)
+
+		fmt.Println(i, r, f, c)
+		// explicit declaration needed if implicit conversion to int is not wished
+		// identical assembly generated
+		{
+			var i = int8(0) // mov byte ptr [rsp+0x2e], 0x0
+			fmt.Println(i)
+		}
+		{
+			var i int8 = 0 // mov byte ptr [rsp+0x2d], 0x0
+			fmt.Println(i)
+		}
+	}
+
+	// Dynamic type of a constant value
+	fmt.Printf("%T\n", 0)      // "int"
+	fmt.Printf("%T\n", 0.0)    // "float64"
+	fmt.Printf("%T\n", 0i)     // "complex128"
+	fmt.Printf("%T\n", '\000') // "int32" (rune)
+
+}
