@@ -104,7 +104,7 @@ func main() {
 	// make([]T, len, cap) // same as make([]T, cap)[:len]
 
 	// 4.2.1 The append Function
-	fmt.Printf("\n4.2.1 The append Function\n")
+	fmt.Println("\n4.2.1 The append Function")
 
 	var runes []rune
 	for _, r := range "Hello, 世界" {
@@ -117,8 +117,16 @@ func main() {
 
 	// append internals
 	var ints []int
-	ints = appendInt(ints, 3)
-	fmt.Println(ints)
+	ints = appendInt(ints, 3, true)
+	fmt.Println(ints, cap(ints)) // [3] 1
+
+	fmt.Println("\nCapacity growth")
+	var x, y []int // why two slices???
+	for i := 0; i < 10; i++ {
+		y = appendInt(x, i, false)
+		fmt.Printf("%d cap=%d \t%v\n", i, cap(y), y)
+		x = y
+	}
 }
 
 func reverse(s []int) {
@@ -141,10 +149,12 @@ func equal(x, y []string) bool {
 	return true
 }
 
-func appendInt(x []int, y int) []int {
+func appendInt(x []int, y int, printCopyDemo bool) []int {
 	if len(x)+1 <= cap(x) {
 		// There is room to grow. Extend the slice.
-		return x[:len(x)+1]
+		x = x[:len(x)+1]
+		x[len(x)-1] = y
+		return x
 	}
 
 	// There is insufficient space. Allocate a new array.
@@ -161,7 +171,18 @@ func appendInt(x []int, y int) []int {
 	}
 
 	z = make([]int, zlen, zcap)
-	copy(z, x) // a built-in function;
+	// a built-in function; (destination, source) instead of loop
+	// can be smaller into bigger
+	copy(z, x)
+	if printCopyDemo {
+		bigger := []int{3, 3, 4}
+		smaller := []int{1, 2}
+		copied := copy(bigger, smaller) // destination > source
+		fmt.Println(bigger, copied)     // [1,2,4] 2
+		copied = copy(smaller, bigger)  // source > destination
+		fmt.Println(smaller, copied)    // [1,2] 2
+	}
+
 	z[len(x)] = y
 	return z
 }
