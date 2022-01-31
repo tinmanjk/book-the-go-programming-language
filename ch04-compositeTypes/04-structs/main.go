@@ -42,6 +42,42 @@ func main() {
 		fmt.Println(seen["non-existent"])
 	}
 
+	fmt.Println("\n4.4.1 Struct Literals")
+	// first form - fragile, well known structs inside its own package etc
+	p := Point{1, 2} // if no field name - EVERY FIELD in CORRECT ORDER
+	fmt.Println(p)   // {1 2}
+	// second form - prefer overall
+	p = Point{Y: 2} // X is set to zero-value
+	// p = Point{2}    // would not compile
+	fmt.Println(p) // {0 2}
+
+	fmt.Println("\nPassing and returning structs to/from functions")
+	fmt.Println(Scale(Point{1, 2}, 5)) // "{5 10}"
+
+	emp := dilbert
+	emp.Salary = 100
+	fmt.Println(Bonus(&emp, 50)) // 50 -> indirect passing
+	AwardAnnualRaise(&emp)
+	fmt.Println(emp.Salary) // 105
+
+	pp := &Point{1, 2} // short notation for creation of pointer to struct
+	// can be used within expression
+	fmt.Println(*pp, &Point{3, 4}) // {1 2} &{3 4}
+}
+
+type Point struct{ X, Y int }
+
+// arguments and returned values from functions
+func Scale(p Point, factor int) Point {
+	return Point{p.X * factor, p.Y * factor}
+}
+
+func Bonus(e *Employee, percent int) int {
+	return e.Salary * percent / 100
+}
+
+func AwardAnnualRaise(e *Employee) {
+	e.Salary = e.Salary * 105 / 100
 }
 
 // Field order IS significant
