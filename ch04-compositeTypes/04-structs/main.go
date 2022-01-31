@@ -63,6 +63,25 @@ func main() {
 	pp := &Point{1, 2} // short notation for creation of pointer to struct
 	// can be used within expression
 	fmt.Println(*pp, &Point{3, 4}) // {1 2} &{3 4}
+
+	fmt.Println("\n4.4.2 Comparing Structs")
+	{
+		// if ALL fields are comparable - then struct is compared in order - much like an array would be
+		p := Point{1, 2}
+		q := Point{2, 1}
+		fmt.Println(p.X == q.X && p.Y == q.Y) // "false"
+		fmt.Println(p == q)                   // "false"
+
+		hits := make(map[address]int)
+		hits[address{"golang.org", 443}]++
+		fmt.Println(hits) // map[{golang.org 443}:1]
+	}
+
+}
+
+type address struct {
+	hostname string
+	port     int
 }
 
 type Point struct{ X, Y int }
