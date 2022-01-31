@@ -117,17 +117,62 @@ func main() {
 
 	// append internals
 	var ints []int
-	ints = appendInt(ints, 3, true)
+	printCopyDemo = true
+	ints = appendInt(ints, 3)
 	fmt.Println(ints, cap(ints)) // [3] 1
 
 	fmt.Println("\nCapacity growth")
-	var x, y []int // why two slices???
+	printCopyDemo = false
+	var x, y []int //two slics to showcase what append returns
 	for i := 0; i < 10; i++ {
-		y = appendInt(x, i, false)
+		y = appendInt(x, i)
 		fmt.Printf("%d cap=%d \t%v\n", i, cap(y), y)
 		x = y
 	}
+
+	{
+		fmt.Println("\nBuilt-in append")
+		var x []int
+		x = append(x, 1)
+		x = append(x, 2, 3) // multiple values
+		x = append(x, 4, 5, 6)
+		x = append(x, x...) // append the slice x -> ... supplies a list of arguments
+		fmt.Println(x)      // "[1 2 3 4 5 6 1 2 3 4 5 6]"
+	}
+
+	// 4.2.2 In-Place Slice Techniques
+	fmt.Println("\n4.2.2 In-Place Slice Techniques")
+	data := []string{"one", "", "three"}
+	fmt.Printf("%q\n", nonempty(data)) // `["one" "three"]`
+	// to avoid the possible confusion from the overwriting
+	// data = nonempty(data)
+	fmt.Printf("%q\n", data) // `["one" "three" "three"]` -> the second three is "" overriden
+
+	data = []string{"one", "", "three"}
+	data = nonemptyWithAppend(data)
+	fmt.Printf("%q\n", data) // `["one" "three"]`
+
+	// stack implementation
+
+	stack := []int{}
+	stack = append(stack, 3) // push
+	stack = append(stack, 4)
+	top := stack[len(stack)-1]
+	fmt.Println(top)             // 4
+	stack = stack[:len(stack)-1] // pop
+	fmt.Println(stack)           // 3
+
+	// remove in place
+	{
+		s := []int{5, 6, 7, 8, 9}
+		fmt.Println(remove(s, 2)) // "[5 6 8 9]"
+		s = []int{5, 6, 7, 8, 9}
+		fmt.Println(removeNoOrder(s, 2)) // "[5 6 9 8]""
+	}
+
 }
+
+var printCopyDemo bool
 
 func reverse(s []int) {
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
@@ -149,7 +194,7 @@ func equal(x, y []string) bool {
 	return true
 }
 
-func appendInt(x []int, y int, printCopyDemo bool) []int {
+func appendInt(x []int, y int) []int {
 	if len(x)+1 <= cap(x) {
 		// There is room to grow. Extend the slice.
 		x = x[:len(x)+1]
@@ -175,6 +220,7 @@ func appendInt(x []int, y int, printCopyDemo bool) []int {
 	// can be smaller into bigger
 	copy(z, x)
 	if printCopyDemo {
+		fmt.Println("\nCopy built-in")
 		bigger := []int{3, 3, 4}
 		smaller := []int{1, 2}
 		copied := copy(bigger, smaller) // destination > source
@@ -185,4 +231,47 @@ func appendInt(x []int, y int, printCopyDemo bool) []int {
 
 	z[len(x)] = y
 	return z
+}
+
+// what slices resemble -> not pure reference types (not just a pointer)
+type IntSlice struct {
+	//lint:ignore U1000 ...
+	ptr *int // pointer to address to a member of the underlying array
+	//lint:ignore U1000 ...
+	len, cap int
+}
+
+// nonempty returns a slice holding only the non-empty strings.
+// The underlying array is modified during the call.
+func nonempty(strings []string) []string {
+	i := 0
+	for _, s := range strings {
+		if s != "" {
+			strings[i] = s
+			i++
+		}
+	}
+	return strings[:i]
+}
+
+func nonemptyWithAppend(strings []string) []string {
+	// interesting technique -> getting zero-length of original same underying array
+	out := strings[:0] // zero-length slice of original
+	for _, s := range strings {
+		if s != "" {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
+func remove(slice []int, index int) []int {
+	copy(slice[index:], slice[index+1:]) // copying left effectively
+	// need to shrink the slice by 1
+	return slice[:len(slice)-1]
+}
+
+func removeNoOrder(slice []int, i int) []int {
+	slice[i] = slice[len(slice)-1]
+	return slice[:len(slice)-1]
 }
