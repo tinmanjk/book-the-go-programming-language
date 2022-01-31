@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"time"
+
+	"github.com/tinmanjk/tgpl/ch04-compositeTypes/04-structs/structExport"
 )
 
 func main() {
@@ -77,14 +79,53 @@ func main() {
 		fmt.Println(hits) // map[{golang.org 443}:1]
 	}
 
+	fmt.Println("\n4.4.3 Struct Embedding and Anonymous	Fields")
+	var w Wheel
+	w.Circle.Point.X = 8 // verbose syntax - whole tree
+	w.Y = 8              // short syntax - leaves only
+	w.Radius = 5         // w.Circle.Radius
+	w.Spokes = 20
+	fmt.Println(w) // {{{8 8} 5} 20}
+
+	// w = Wheel{8, 8, 5, 20}                       // compile error: unknown fields
+	// w = Wheel{X: 8, Y: 8, Radius: 5, Spokes: 20} // compile error: unknown fields
+	w = Wheel{Circle{Point{7, 7}, 4}, 19} // correct form 1
+	w = Wheel{                            // correct form 2
+		Circle: Circle{
+			Point:  Point{X: 7, Y: 7},
+			Radius: 4,
+		},
+		Spokes: 19, // NOTE: trailing comma necessary here (and at Radius)
+	}
+	fmt.Println(w) // {{{7 7} 4} 19}
+	// # adverb -> go Syntax representation of the value useful here
+	fmt.Printf("%#v\n", w) // Output: // Wheel{Circle:Circle{Point:Point{X:42, Y:8}, Radius:5}, Spokes:20}
+
+	// embedded type is not exported but its fields are exported
+	person := structExport.Person{}
+	// person.address.Street -> inaccessible
+	person.Street = "Baker Str." // still works
+	fmt.Printf("%#v\n", person)  // structExport.Person{address:structExport.address{Street:"Baker Str."}}
+	// see 6.3. for accessing methods of embdedded type with the short notation
+
+}
+
+type Point struct{ X, Y int }
+
+type Circle struct {
+	Point  // anonymous field -> name is Point -> like Point Point but if it were no short syntax
+	Radius int
+}
+
+type Wheel struct {
+	Circle // anonymous field
+	Spokes int
 }
 
 type address struct {
 	hostname string
 	port     int
 }
-
-type Point struct{ X, Y int }
 
 // arguments and returned values from functions
 func Scale(p Point, factor int) Point {
