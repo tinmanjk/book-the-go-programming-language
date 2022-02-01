@@ -28,6 +28,8 @@ func main() {
 	if err := report.Execute(os.Stdout, result); err != nil {
 		log.Fatal(err)
 	}
+
+	// see issueshtml for html templating (vs text templating)
 }
 
 func daysAgo(t time.Time) int {
