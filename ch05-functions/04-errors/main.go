@@ -84,6 +84,23 @@ func main() {
 		// exit status 1
 	}
 
+	fmt.Println("\n5.4.2 End of File (EOF)")
+	// apparently we can have named errors
+	// var EOF = errors.New("EOF") ->
+	// how do we compare interface types?
+	// https://golangbyexample.com/comparing-error-go/
+	// **changes in error handling** as of 1.13
+	// https://stackoverflow.com/questions/39121172/how-to-compare-go-errors
+	// errors as constants -> interesting
+	// https://dave.cheney.net/2016/04/07/constant-errors
+	// to be continued in **7.11**
+	// if err == io.EOF {
+	// 	break // finished reading
+	// }
+	// if err != nil {
+	// 	return fmt.Errorf("read failed: %v", err)
+	// }
+
 }
 
 func propagateErrorFromHttpGet(url string) (*http.Response, error) {
