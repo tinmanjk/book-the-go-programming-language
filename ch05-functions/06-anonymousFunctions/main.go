@@ -65,7 +65,33 @@ func main() {
 
 	fmt.Println("\nBread-First Search Crawler")
 	workListQueue := []string{`https://pkg.go.dev/golang.org/x/net/html?tab=versions`}
-	breadthFirst(workListQueue, printURLandExtractLinks, 2)
+	breadthFirst(workListQueue, printURLandExtractLinks, 2, 3)
+
+	// 5.6.1 Caveat: Capturing Iteration Variables
+	fmt.Println("5.6.1 Caveat: Capturing Iteration Variables")
+	var closureWrongIterationCapture []func()
+	var closureCorectIterationCapture []func()
+
+	stringsSlice := []string{"one", "two", "three"}
+	for _, s := range stringsSlice {
+		closureWrongIterationCapture = append(closureWrongIterationCapture,
+			func() {
+				fmt.Println(s)
+			})
+		s := s // can be the same name -> shadowing but different memory location to capture
+		closureCorectIterationCapture = append(closureCorectIterationCapture,
+			func() {
+				fmt.Println(s)
+			})
+	}
+
+	for i := 0; i < 3; i++ {
+		closureWrongIterationCapture[i]()  // always "three" -> last iteration value
+		closureCorectIterationCapture[i]() // always -> one two three
+		fmt.Println()
+	}
+	// issue to be aware of when using go/defer
+
 }
 
 // squares returns a function that returns
@@ -119,7 +145,8 @@ func printURLandExtractLinks(url string) []string {
 // breadthFirst calls getChildNodes (f in book) for each item in the worklistQueue (queue mine)
 // Any items returned by getChildNodes are added to the worklistQueue
 // getChildNodes (f in book) is called at most once for each item.
-func breadthFirst(worklistQueue []string, getChildNodes func(item string) []string, depth int) {
+func breadthFirst(worklistQueue []string, getChildNodes func(item string) []string,
+	depth int, maxChildNodes int) {
 	seen := make(map[string]bool)
 	currentDepth := 0
 	for len(worklistQueue) > 0 && currentDepth < depth {
@@ -129,7 +156,8 @@ func breadthFirst(worklistQueue []string, getChildNodes func(item string) []stri
 		for _, item := range currentDepthItems {
 			if !seen[item] {
 				seen[item] = true
-				worklistQueue = append(worklistQueue, getChildNodes(item)...)
+				// maxChildNodes -> can have duplicates -> so != maxBreadth
+				worklistQueue = append(worklistQueue, getChildNodes(item)[:maxChildNodes]...)
 			}
 		}
 		currentDepth++
