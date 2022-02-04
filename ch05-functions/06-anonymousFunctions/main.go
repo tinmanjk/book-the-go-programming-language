@@ -74,10 +74,14 @@ func main() {
 
 	stringsSlice := []string{"one", "two", "three"}
 	for _, s := range stringsSlice {
+		// https://eli.thegreenplace.net/2019/go-internals-capturing-loop-variables-in-closures/
+		// https://stackoverflow.com/questions/26692844/captured-closure-for-loop-variable-in-go
+		// capture by reference
 		closureWrongIterationCapture = append(closureWrongIterationCapture,
 			func() {
 				fmt.Println(s)
 			})
+		// capture by value
 		s := s // can be the same name -> shadowing but different memory location to capture
 		closureCorectIterationCapture = append(closureCorectIterationCapture,
 			func() {
