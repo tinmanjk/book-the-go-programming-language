@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"net/url"
+)
 
 func main() {
 	fmt.Println("Methods with a Pointer Receiver")
@@ -31,6 +34,27 @@ func main() {
 	// 3. Receiver argument's type *T and receiver parameter is T -> implicit *T
 	pp.ScaleByNoPointer(3)
 
+	fmt.Println("\n6.2.1 Nil Is a Valid Receiver Value")
+	ilist := IntList{Value: 3, Tail: nil}
+	fmt.Println(ilist.Sum())
+
+	// Values maps a string key to a list of values.
+	// type Values map[string][]string -> from url package
+
+	m := url.Values{"lang": {"en"}} // direct construction
+	m.Add("item", "1")
+	m.Add("item", "2")
+
+	fmt.Println(m.Get("lang")) // "en"
+	fmt.Println(m.Get("q"))    // ""
+	fmt.Println(m.Get("item")) // "1" (first value)
+	fmt.Println(m["item"])     // "[1 2]" (direct map access)
+
+	m = nil
+	url.Values(nil).Get("item") // works -> will return ""
+	fmt.Println(m.Get("item"))  // "" -> still works
+	// m.Add("item", "3")         // panic: assignment to entry in nil map
+
 }
 
 type Point struct {
@@ -48,4 +72,19 @@ func (p Point) ScaleByNoPointer(factor float64) {
 func (p *Point) ScaleBy(factor float64) {
 	p.X *= factor
 	p.Y *= factor
+}
+
+// An IntList is a linked list of integers.
+// A nil *IntList represents the empty list.
+type IntList struct {
+	Value int
+	Tail  *IntList
+}
+
+// Sum returns the sum of the list elements.
+func (list *IntList) Sum() int {
+	if list == nil {
+		return 0
+	}
+	return list.Value + list.Tail.Sum() // would call the method with nil receiver
 }
