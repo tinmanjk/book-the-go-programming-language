@@ -57,6 +57,7 @@ func (r renamedType) extensionWithRenamedType() {
 }
 
 // named type's underlying type should NOT be **a pointer** or **an interface**
+// to avoid ambiguities with pointer type receivers of ordinary types
 //lint:ignore U1000 ....
 type renamedTypePointer *otherPackage.ExportedType
 
