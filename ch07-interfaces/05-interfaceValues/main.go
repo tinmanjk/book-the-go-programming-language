@@ -127,7 +127,8 @@ func main() {
 	// Mine
 
 	fmt.Println("\nComparing interface values - COMPARABLE but panic if dynamic type NOT comparable")
-	var x interface{} = [3]int{1, 2, 3}
+	var x interface{}
+	x = [3]int{1, 2, 3}
 	//lint:ignore SA4000 ...
 	fmt.Println(x == x) // true 1. Type equal 2. Dynamic values are equal accordin to the type equal
 	// can be used as keys of a map/operands of switch
@@ -147,6 +148,31 @@ func main() {
 		fmt.Printf("%T\n", w) // "*bytes.Buffer"
 	}
 
+	fmt.Println("\n7.5.1. Caveat: An Interface Containing a Nil Pointer Is Non-Nil")
+	var buf *bytes.Buffer // should be var buf io.Writer
+	// var buf io.Writer
+
+	fmt.Println(buf == nil) // true
+	iValue := io.Writer(buf)
+	//lint:ignore SA4023 ...
+	fmt.Println(iValue == nil) // false, an interface containing a nil pointer is NON-NIL
+	fmt.Println(iValue)        //  nil
+
+	f(buf) // pass by value -> should implicitly create an interface value which is NOT NIL
+}
+
+func f(writer io.Writer) {
+	// here we don't have nil if the concrete type was nil
+	defer func() {
+		if p := recover(); p != nil {
+			fmt.Println("panic:", p)
+		}
+	}()
+	if writer != nil {
+		// panic: runtime error: invalid memory address or nil pointer dereference
+		// **receiver** here is NIL
+		writer.Write([]byte("done!\n"))
+	}
 }
 
 type mockWriter struct {
