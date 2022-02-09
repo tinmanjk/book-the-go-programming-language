@@ -67,6 +67,9 @@ func main() {
 	w.Write(hello) // "hello" -> **effectively os.Stdout.Write([]byte("hello"))**
 	// main.go:64      0x4a3ac5        488b9424e0000000                mov rdx, qword ptr [rsp+0xe0] -> type descriptor location
 	// main.go:64      0x4a3acf        488b5218                        mov rdx, qword ptr [rdx+0x18] -> offset to the method possibly
+	// https://research.swtch.com/interfaces
+	// -> first 0x18bytes from the itable location seem to be type metadata
+	// -> the first method function pointer f[0] for the type [rdx+0x18] -> 24bytes off
 	// main.go:64      0x4a3ad3        488b8424e8000000                mov rax, qword ptr [rsp+0xe8] -> value as the receiver of the method call (os.StdOut)
 	// main.go:64      0x4a3adb        b906000000                      mov ecx, 0x6
 	// main.go:64      0x4a3ae0        4889cf                          mov rdi, rcx
