@@ -33,7 +33,7 @@ func main() {
 	fmt.Printf("%T->%[1]s\n", wrappingErr)         // *fmt.wrapError->error message (** different type wrapError)
 	// type wrapError struct {
 	// 	msg string
-	// 	err error
+	// 	err error // interface value ( can be compared )
 	// }
 	// func (e *wrapError) Unwrap() error {	return e.err }
 
@@ -41,7 +41,7 @@ func main() {
 	fmt.Println(errors.Is(nonWrappingErr, err)) // false
 	fmt.Println(errors.Is(wrappingErr, err))    // true ( mind the order, first is where to search for the second as a match)
 	unwrappedErr := errors.Unwrap(wrappingErr)
-	fmt.Println(unwrappedErr == err) // true -> same pointers
+	fmt.Println(unwrappedErr == err) // true -> cf. interface comparison - same type, same *errors.errorString pointer values
 
 	fmt.Println("\nErrors as number representation -> syscall.Errno")
 	var errNo error = syscall.Errno(2) // creating an interface value
