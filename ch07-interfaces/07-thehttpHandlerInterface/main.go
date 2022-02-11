@@ -37,10 +37,21 @@ func main() {
 	// 	h.ServeHTTP(w, r)
 	// }
 
+	// Using DefaultServeMux -> registered to from http.Handle and http.HandleFunc
+
+	useGlobalMux := false
+	http.HandleFunc("/list", db.list)
+	http.HandleFunc("/price", db.price)
+
 	// func ListenAndServe(address string, h Handler) error
 	if useMux {
 		dbHandlesListOnly = true
-		log.Fatal(http.ListenAndServe("localhost:8000", mux))
+		if useGlobalMux {
+			log.Fatal(http.ListenAndServe("localhost:8000", nil))
+		} else {
+			log.Fatal(http.ListenAndServe("localhost:8000", mux))
+		}
+
 	} else {
 		dbHandlesListOnly = false
 		log.Fatal(http.ListenAndServe("localhost:8000", db))
