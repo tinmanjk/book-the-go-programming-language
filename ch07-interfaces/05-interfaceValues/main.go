@@ -65,8 +65,20 @@ func main() {
 	// main.go:63      0x4a3aad        48c784241801000006000000        mov qword ptr [rsp+0x118], 0x6
 	// main.go:63      0x4a3ab9        48c784242001000006000000        mov qword ptr [rsp+0x120], 0x6
 	w.Write(hello) // "hello" -> **effectively os.Stdout.Write([]byte("hello"))**
-	// main.go:64      0x4a3ac5        488b9424e0000000                mov rdx, qword ptr [rsp+0xe0] -> type descriptor location
-	// main.go:64      0x4a3acf        488b5218                        mov rdx, qword ptr [rdx+0x18] -> offset to the method possibly
+	// main.go:64      0x4a3ac5        488b9424e0000000                mov rdx, qword ptr [rsp+0xe0] -> itable pointer
+	// main.go:64      0x4a3acf        488b5218                        mov rdx, qword ptr [rdx+0x18] -> 0x18 is the fun[0] - only, Write method
+	//!! runtime generation of itable, compile-time generation of offset - methods of interface are sorted alphabetically
+	// type itab struct {
+	// 	inter *interfacetype -> 8bytes
+	// 	_type *_type -> 8 bytes>
+	// 	hash  uint32 // copy of _type.hash. Used for type switches. -> 4 bytes
+	// 	_     [4]byte -> 4 bytes
+	// 	fun   [1]uintptr // variable sized. fun[0]==0 means _type does not implement inter. -> start at 0x18
+	// }
+	// fun[0] -> first function -> then contiguously in memory -> NOT SOME PLACE ELSE BUT THERE -> the second/third function pointers
+	// My question: https://stackoverflow.com/questions/71094037/how-is-the-itab-struct-actually-having-a-list-of-function-pointers/71095910#71095910
+	// from iface.go allocation of itable ->  itba + len(inter.mhdr) -> number of methods for the interface
+	// m = (*itab)(persistentalloc(unsafe.Sizeof(itab{})+uintptr(len(inter.mhdr)-1)*goarch.PtrSize, 0, &memstats.other_sys))
 	// https://research.swtch.com/interfaces
 	// -> first 0x18bytes from the itable location seem to be type metadata
 	// -> the first method function pointer f[0] for the type [rdx+0x18] -> 24bytes off
