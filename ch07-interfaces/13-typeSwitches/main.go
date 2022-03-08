@@ -43,8 +43,8 @@ func sqlQuote(x interface{}) string {
 //lint:ignore U1000 ...
 func sqlQuoteWithTypeSwitch(x interface{}) string {
 	// Although the type of x is interface{}, we consider it a
-	// discriminated union of int, uint, bool, string, and nil.
-	// -> panic otherwise
+	// **discriminated union** of int, uint, bool, string, and nil.
+	// https://en.wikipedia.org/wiki/Tagged_union, only one type at a time but of this set
 
 	// -> type switch evaluates the expression x.(type) -> type is keyword
 	// AND assigns to x (special form allowing assignment vs normal switch expression)
