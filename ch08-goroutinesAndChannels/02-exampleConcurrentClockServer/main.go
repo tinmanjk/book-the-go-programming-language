@@ -23,7 +23,7 @@ func main() {
 			log.Print(err) // e.g., connection aborted
 			continue
 		}
-		handleConn(conn) // blocks -> handle one connection at a time ->
+		go handleConn(conn) // non-blocking
 	}
 }
 
